@@ -25,6 +25,11 @@ module Moneta
       super(key, Utils.without(options, :expires))
     end
 
+    # monkeypatch: returns the expiration
+    def fetch_expiration(key, options = {})
+      load_entry_expiration(key, options)
+    end
+
     # (see Proxy#load)
     def load(key, options = {})
       return super if options.include?(:raw)
@@ -55,6 +60,13 @@ module Moneta
     end
 
     private
+
+    # monkeypatch: returns the expiration of the entry
+    def load_entry_expiration(key, options)
+      options = Utils.without(options, :expires)
+      value, expires = @adapter.load(key, options)
+      expires
+    end
 
     def load_entry(key, options)
       new_expires = expires_at(options, nil)
